@@ -2,7 +2,6 @@ document.getElementById('loginTime').textContent = new Date().toLocaleString();
 let credits = 0;
 let clickPwr = 1;
 let cps = 0;
-let cpsDisplay = 0;
 let startTime = Date.now();
 let solar = 0, fusion = 0, siege = 0, quantum = 0;
 
@@ -34,7 +33,7 @@ function addLog(msg) {
     const log = document.getElementById('logSec');
     const entry = document.createElement('div');
     entry.className = 'log-entry';
-    const time = new Date().toLocaleDateString();
+    const time = new Date().toLocaleTimeString();
     entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-msg">${msg}</span>`;
     log.insertBefore(entry, log.firstChild);
     if (log.children.length > 20) log.removeChild(log.lastChild);
@@ -90,10 +89,10 @@ function updUI() {
     const oxyBlocks = Math.floor(oxygen / 5);
     const pwrBlocks = Math.floor(pwr / 5);
     
-    document.getElementById('oxfill').textContent = '█'.repeat(oxyBlocks);
+    document.getElementById('oxfill').textContent = '█'.repeat(oxyBlocks) + '░'.repeat(20 - oxyBlocks);
     document.getElementById('oxPercent').textContent = Math.floor(oxygen) + '%';
-    document.getElementById('pwrFill').textContent = '█'.repeat(pwrBlocks);
-    document.getElementById('pwrPercent').textContent = Math.floor(pwr) + '%';
+    document.getElementById('powerFill').textContent = '█'.repeat(pwrBlocks) + '░'.repeat(20 - pwrBlocks);
+    document.getElementById('powerPercent').textContent = Math.floor(pwr) + '%';
 
     upgrades.forEach(upg => {
         const line = document.getElementById(`upgrade-${upg.id}`);
