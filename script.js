@@ -76,8 +76,8 @@ function updUI() {
     document.getElementById('cps').textContent = cps.toFixed(1);
     document.getElementById('solarCount').textContent = solar;
     document.getElementById('fusionCount').textContent = fusion;
-    document.getElementById('siegeCount').textCount = siege;
-    document.getElementById('quantumCount').textCount  =quantum;
+    document.getElementById('siegeCount').textContent = siege;
+    document.getElementById('quantumCount').textContent  =quantum;
 
     // uptime
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
