@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>spaceflight - commander</title>
+        <link rel="stylesheet" href="./styles.css">
+    </head>
+    <body>
+        <div class="window">
+            <div class="titlebar">
+                <div class="btns">
+                    <div class="btn close"></div>
+                    <div class="btn min"></div>
+                    <div class="btn max"></div>
+                </div>
+                <div class="title">spaceflight - sss (siege space station) terminal</div> <!-- pun intended! badum tsshhh-->
+            </div>
+            <div class="content">
+                <div class="output">last login: <span id="loginTime"></span> on sss001</div>
+                <div class="prompt">sss:~ commander<span class="cmd"> ./station_control.sh</span></div>
+                <div class="output">initialising Siege Space Station controller...</div>
+                <div class="output">loading systems... [OK]</div>
+                <br>
+
+                <div class="sec-head">STATION STATUS</div>
+                <div class="metric-ln">
+                    <span class="metric-lb">STATION_ID:</span>
+                    <span class="metric-val">SIEGE_SPACE_STATION</span>
+                </div>
+                <div class="metric-ln">
+                    <span class="metric-lb">MISSION_TIME:</span>
+                    <span class="metric-val" id="uptime">00:00:00</span>
+                </div>
+                <div class="metric-ln">
+                    <span class="metric-lb">AVAILABLE_ENERGY:</span>
+                    <span class="metric-val" style="color: #00ff00;" id="credits">0</span>
+                </div>
+                <div class="metric-ln">
+                    <span class="metric-lb">OXYGEN_LEVEL:</span>
+                    <span class="metric-val">
+                        <span class="progbar">
+                            <span class="progfill" id="oxfill">████████████████████</span>
+                        </span>
+                        <span id="oxPercent">100%</span>
+                    </span>
+                </div>
+                <div class="metric-ln">
+                    <span class="metric-lb">POWER_CORE:</span>
+                    <span class="metric-val">
+                        <span class="progbar">
+                            <span class="progfill" id="powerFill">████████████████████</span>
+                        </span>
+                        <span id="powerPercent">100%</span>
+                    </span>
+                </div>
+                <div class="sec-head">POWER GENERATION</div>
+                <div class="btn-prompt" id="genBtn">
+                    <div class="btn-txt">[ENTER] CHARGE CAPACITOR [+<span id="clickPower">1</span> EC]</div>
+                </div>
+                <div class="sec-head">AUTOMATED SYSTEMS</div>
+                <div class="gen-grid">
+                    <div class="gen-box">
+                        <div class="gen-name">SOLAR</div>
+                        <div class="gen-count" id="solarCount">0</div>
+                    </div>
+                    <div class="gen-box">
+                        <div class="gen-name">FUSION</div>
+                        <div class="gen-count" id="fusionCount">0</div>
+                    </div>
+                    <div class="gen-box">
+                        <div class="gen-name">SIEGE_CORE</div>
+                        <div class="gen-count" id="siegeCount">0</div>
+                    </div>
+                    <div class="gen-box">
+                        <div class="gen-name">QUANTUM</div>
+                        <div class="gen-count" id="quantumCount">0</div>
+                    </div>
+                </div>
+                <div class="sec-head">AVAILABLE UPRADES</div>
+                <div class="upg-sec" id="upgSec"></div>
+                <div class="sec-head">SYSTEM LOG</div>
+                <div class="log-sec" id="logSec"></div>
+                <br>
+                <div class="prompt"><span class="cursor"></span></div>
+            </div>
+        </div>
+        <script src="./script.js"></script>
+    </body>
+</html>
