@@ -62,6 +62,18 @@
                 <div class="btn-prompt" id="genBtn">
                     <div class="btn-txt">[ENTER] CHARGE CAPACITOR [+<span id="clickPower">1</span> EC]</div>
                 </div>
+                <div class="sec-head">WARP DRIVE</div>
+                <div class="metric-ln">
+                    <span class="metric-lb">WARP_LEVEL:</span>
+                    <span class="metric-val" style="color: #ffff00;" id="warpLvl">0</span>
+                </div>
+                <div class="metric-ln">
+                    <span class="metric-lb">PRODUCTION_MULTIPLIER:</span>
+                    <span class="metric-val" style="color: #ff00ff;" id="lifetimeCreds">0</span>
+                </div>
+                <div class="btn-prompt locked" id="warpBtn" onclick="warp()">
+                    <div class="btn-txt">ENGAGE WARP DRIVE [costs 1,000,000 EC]</div>
+                </div>
                 <div class="sec-head">AUTOMATED SYSTEMS</div>
                 <div class="gen-grid">
                     <div class="gen-box">

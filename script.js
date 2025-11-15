@@ -4,6 +4,9 @@ let clickPwr = 1;
 let cps = 0;
 let startTime = Date.now();
 let solar = 0, fusion = 0, siege = 0, quantum = 0;
+let warpLvl = 0;
+let lifetimeCreds = 0;
+let warpMult = 1;
 
 const upgrades = [
     {id:'solar', name:'SOLAR_PANELS', desc:'0.1 EC/s', cost:10, owned: 0,cps: 0.1},
@@ -40,7 +43,7 @@ function addLog(msg) {
 }
 
 document.getElementById('genBtn').addEventListener('click', function(e) {
-    credits += clickPwr;
+    credits += clickPwr * warpMult;
     const floater = document.createElement('div');
     floater.className = 'float-txt';
     floater.textContent = `+${clickPwr}`;
@@ -69,6 +72,29 @@ function buyUpg(id) {
     updUI();
 }
 
+function warp() {
+    if (credits < 1000000) return; // note: it's 1 million
+    const confirmed = confirm('WARP DRIVE\n \nAre you sure you want to enable WARP DRIVE? It will erase your progress, BUT.. \n it will grant you +10% to all production and +10% to click power\n\n Continue?');
+    if (!confirmed) return;
+    warpLvl++;
+    warpMult = 1+(warpLvl * 0.1);
+    addLog(`> WARP DRIVE INITIATED - WARP LEVEL ${warpLvl}`);
+    addLog(`> ALL SYSTEMS RESET - MULTIPLIER: ${warpMult.toFixed(1)}x`);
+    credits = 0;
+    clickPwr= 1;
+    cps = 0;
+    solar = 0;
+    fusion = 0;
+    siege = 0;
+    quantum = 0;
+    startTime = Date.now();
+    upgrades.forEach(upg => {
+        upg.owned = 0;
+        upg.cost = [10, 50, 100, 250, 1000, 2500, 10000, 15000][upgrades.indexOf(upg)];
+    });
+    updUI();
+}
+
 function updUI() {
     document.getElementById('credits').textContent = Math.floor(credits).toLocaleString();
     document.getElementById('clickPower').textContent = clickPwr;
@@ -88,12 +114,24 @@ function updUI() {
     const pwr = 90 + Math.random() * 10;
     const oxyBlocks = Math.floor(oxygen / 5);
     const pwrBlocks = Math.floor(pwr / 5);
+    lifetimeCreds += (cps / 10) * warpMult;
     
     document.getElementById('oxfill').textContent = '█'.repeat(oxyBlocks) + '░'.repeat(20 - oxyBlocks);
     document.getElementById('oxPercent').textContent = Math.floor(oxygen) + '%';
     document.getElementById('powerFill').textContent = '█'.repeat(pwrBlocks) + '░'.repeat(20 - pwrBlocks);
     document.getElementById('powerPercent').textContent = Math.floor(pwr) + '%';
 
+    const warpBtn = document.getElementById('warpBtn');
+    if (warpBtn) {
+        if (credits >= 1000000) { // note again, this is 1 million
+            warpBtn.classList.remove('locked');
+        } else {
+            warpBtn.classList.add('locked');
+        }
+    }
+    document.getElementById('warpLvl').textContent = warpLvl
+    document.getElementById('warpMult').textContent = warpMult.toFixed(1);
+    document.getElementById('lifetimeCreds').textContent = Math.floor(lifetimeCreds);
     upgrades.forEach(upg => {
         const line = document.getElementById(`upgrade-${upg.id}`);
         line.querySelector('.lvl').textContent = upg.owned;
@@ -103,7 +141,7 @@ function updUI() {
 }
 
 setInterval(() => {
-    credits += cps / 10;
+    credits += (cps / 10) * warpMult;
     updUI();
 },100);
 
