@@ -173,6 +173,7 @@ body {
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
+    user-select: none;
 }
 
 .btn-prompt:hover {
@@ -182,6 +183,22 @@ body {
 
 .btn-prompt:active {
     background: rgba(0,255,0,0.3);
+}
+
+.btn-prompt.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #666666; /* wow spoopy number again! */
+    background: rgba(100,100,100,0.1);
+}
+
+.btn-prompt.locked:hover {
+    background: rgba(100,100,100,0.1);
+    box-shadow: none;
+}
+
+.btn-prompt.locked .btn-txt {
+    color: #666666; /* wow its spoopy AGAIN!!!! */
 }
 
 .btn-txt {
@@ -205,6 +222,7 @@ body {
     grid-template-columns: 30px 1fr 100px 80px;
     align-items: center;
     gap: 10px;
+    user-select: none;
 }
 
 .upg-ln:hover {

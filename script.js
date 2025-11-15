@@ -7,6 +7,7 @@ let solar = 0, fusion = 0, siege = 0, quantum = 0;
 let warpLvl = 0;
 let lifetimeCreds = 0;
 let warpMult = 1;
+let warpCost = 1000000; //1m
 
 const upgrades = [
     {id:'solar', name:'SOLAR_PANELS', desc:'0.1 EC/s', cost:10, owned: 0,cps: 0.1},
@@ -73,15 +74,17 @@ function buyUpg(id) {
 }
 
 function warp() {
-    if (credits < 1000000) return; // note: it's 1 million
+    if (credits < warpCost) return;
     const confirmed = confirm('WARP DRIVE\n \nAre you sure you want to enable WARP DRIVE? It will erase your progress, BUT.. \n it will grant you +10% to all production and +10% to click power\n\n Continue?');
     if (!confirmed) return;
     warpLvl++;
-    warpMult = 1+(warpLvl * 0.1);
-    addLog(`> WARP DRIVE INITIATED - WARP LEVEL ${warpLvl}`);
-    addLog(`> ALL SYSTEMS RESET - MULTIPLIER: ${warpMult.toFixed(1)}x`);
+    warpMult = 1+ (warpLvl * 0.1);
+    warpCost = Math.floor(warpCost * 2.5);
+    addLog(`> WARP DRIVE ACTIVATED - WARP LEVEL ${warpLvl}`);
+    addLog(`> ALL SYSTEMS RESET - MULTIPLIER SET TO ${warpMult.toFixed(1)}x`);
+    addLog(`> NEXT WARP REQUIREMENT: ${warpCost.toLocaleString()} EC`);
     credits = 0;
-    clickPwr= 1;
+    clickPwr = 1;
     cps = 0;
     solar = 0;
     fusion = 0;
@@ -90,7 +93,7 @@ function warp() {
     startTime = Date.now();
     upgrades.forEach(upg => {
         upg.owned = 0;
-        upg.cost = [10, 50, 100, 250, 1000, 2500, 10000, 15000][upgrades.indexOf(upg)];
+        upg.cost = [10,50, 100,250, 1000,2500, 10000, 5000][upgrades.indexOf(upg)];
     });
     updUI();
 }
@@ -123,7 +126,8 @@ function updUI() {
 
     const warpBtn = document.getElementById('warpBtn');
     if (warpBtn) {
-        if (credits >= 1000000) { // note again, this is 1 million
+        warpBtn.querySelector('.btn-txt').textContent = `ENGAGE WARP DRIVE [REQUIREMENT: ${warpCost.toLocaleString()} ECs]`;
+        if (credits >= warpCost) {
             warpBtn.classList.remove('locked');
         } else {
             warpBtn.classList.add('locked');
