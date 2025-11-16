@@ -8,6 +8,7 @@ let warpLvl = 0;
 let lifetimeCreds = 0;
 let warpMult = 1;
 let warpCost = 1000000; //1m
+let totalClicks = 0;
 
 const upgrades = [
     {id:'solar', name:'SOLAR_PANELS', desc:'0.1 EC/s', cost:10, owned: 0,cps: 0.1},
@@ -19,6 +20,11 @@ const upgrades = [
     {id:'quantum', name:'QUANTUM_CORE', desc:'+100 EC/s', cost:10000, owned: 0, cps: 100},
     {id:'click4', name:'PWR_AMP_4', desc:'+100 EC/click', cost:15000, owned: 0, clickBonus:100}
 ]; // used ai for this array cuz i wasnt creative enough to come up w more upgrades :sob:
+
+const achievements = [
+    {id: 'clicker', name:'BABY_STEPS', desc:'click 100 times? yuh got this', goal: 100, progress: 0, unlocked: false, reward: 1000},
+    {id: 'rich', name: 'MILLIONAIRE', desc:'earn 1M credits? rich. (those who know)', goal: 1000000, progress: 0, unlocked: false, reward: 10000}
+];
 
 const upgSec = document.getElementById('upgSec');
 upgrades.forEach(upgrade => {
@@ -33,6 +39,19 @@ upgrades.forEach(upgrade => {
     upgSec.appendChild(line);
 });
 
+const achSec = document.getElementById('achSec');
+achievements.forEach(ach => {
+    const line = document.createElement('div');
+    line.className = 'upg-ln locked';
+    line.id = `ach-${ach.id}`;
+    line.style.cursor = 'default';
+    line.innerHTML = `
+    <span class="upg-name">${ach.name} - ${ach.desc}</span>
+    <span class="upg-lvl"><span class="ach-prog">0</span><span>/${ach.goal}</span>
+    <span class="upg-cost">${ach.reward > 0 ? ach.reward + ' EC' : '✓'}</span>`; // note: at some point, let's use an icon library instead
+    achSec.appendChild(line);
+}); 
+
 function addLog(msg) {
     const log = document.getElementById('logSec');
     const entry = document.createElement('div');
@@ -44,6 +63,7 @@ function addLog(msg) {
 }
 
 document.getElementById('genBtn').addEventListener('click', function(e) {
+    totalClicks++;
     credits += clickPwr * warpMult;
     const floater = document.createElement('div');
     floater.className = 'float-txt';
@@ -98,6 +118,20 @@ function warp() {
     updUI();
 }
 
+function checkACH() {
+    achievements.forEach(ach => {
+        if (ach.unlocked) return;
+        if (ach.id === 'clicker') ach.progress = totalClicks;
+        if (ach.id === 'rich') ach.progress = Math.floor(lifetimeCreds);
+        if (ach.progress >= ach.goal) {
+            ach.unlocked = true;
+            credits += ach.reward;
+            addLog('> ACHIEVEMENT UNLOCKED: ${ach.name}');
+            if (ach.reward > 0) addLog(`> REWARD: +${ach.reward} ECs`);
+        }
+    });
+}
+
 function updUI() {
     document.getElementById('credits').textContent = Math.floor(credits).toLocaleString();
     document.getElementById('clickPower').textContent = clickPwr;
@@ -135,17 +169,31 @@ function updUI() {
     }
     document.getElementById('warpLvl').textContent = warpLvl
     document.getElementById('warpMult').textContent = warpMult.toFixed(1);
-    document.getElementById('lifetimeCreds').textContent = Math.floor(lifetimeCreds);
+    document.getElementById('lifetimeCreds').textContent = Math.floor(lifetimeCreds).toLocaleString();
     upgrades.forEach(upg => {
         const line = document.getElementById(`upgrade-${upg.id}`);
         line.querySelector('.lvl').textContent = upg.owned;
         line.querySelector('.cost').textContent = upg.cost.toLocaleString();
         line.classList.toggle('locked', credits < upg.cost);
     });
+    checkACH();
+    achievements.forEach(ach => {
+        const line = document.getElementById(`ach-${ach.id}`);
+        if (line){
+            line.querySelector('.ach-prog').textContent = ach.progress;
+            if (ach.unlocked) {
+                line.classList.remove('locked');
+                line.style.borderLeftColor = '#00ff00';
+                line.style.background = 'rgba(0,255,0,0.1)';
+            }
+        }
+    });
 }
 
 setInterval(() => {
-    credits += (cps / 10) * warpMult;
+    const earned = (cps / 10) * warpMult;
+    credits += earned;
+    lifetimeCreds += earned;
     updUI();
 },100);
 
