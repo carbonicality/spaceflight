@@ -126,7 +126,7 @@ function checkACH() {
         if (ach.progress >= ach.goal) {
             ach.unlocked = true;
             credits += ach.reward;
-            addLog('> ACHIEVEMENT UNLOCKED: ${ach.name}');
+            addLog(`> ACHIEVEMENT UNLOCKED: ${ach.name}`);
             if (ach.reward > 0) addLog(`> REWARD: +${ach.reward} ECs`);
         }
     });
