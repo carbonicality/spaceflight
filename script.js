@@ -441,7 +441,7 @@ function updUI() {
     if (droneContainer) {
         droneContainer.innerHTML = '';
         drones.forEach(drone => {
-            const droneEl = document.getElementById('div');
+            const droneEl = document.createElement('div');
             droneEl.className = 'upg-ln';
             droneEl.style.cursor = 'default';
             droneEl.innerHTML = `
