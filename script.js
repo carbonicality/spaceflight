@@ -9,6 +9,12 @@ let lifetimeCreds = 0;
 let warpMult = 1;
 let warpCost = 1000000; //1m
 let totalClicks = 0;
+let antimatter = 0, darkEnergy = 0, singularity = 0;
+let rPoints = 0;
+let acLvl = 0;
+let critChance = 0;
+let critMult = 2;
+let lastEVT = Date.now();
 
 const upgrades = [
     {id:'solar', name:'SOLAR_PANELS', desc:'0.1 EC/s', cost:10, owned: 0,cps: 0.1},
@@ -24,6 +30,16 @@ const upgrades = [
 const achievements = [
     {id: 'clicker', name:'BABY_STEPS', desc:'click 100 times? yuh got this', goal: 100, progress: 0, unlocked: false, reward: 1000},
     {id: 'rich', name: 'MILLIONAIRE', desc:'earn 1M credits? rich. (those who know)', goal: 1000000, progress: 0, unlocked: false, reward: 10000}
+];
+
+const randomEvents = [
+    {id:'meteor', name: 'METEOR_SHOWER', desc: 'solar panels +50% for 30s', duration: 30000, effect:'solarBoost'}
+];
+let activeEV = null;
+
+const skills = [
+    {id: 'prod1', name: 'PRODUCTION_I', desc: '+15% to all production', tier: 1, cost: 10, owned: false, x:1,y:1, bonus:{prodMult:0.15}},
+    {id: 'prod2', name: 'PRODUCTION_II', desc: '+30% to all production', tier: 2, cost: 50, owned: false, x: 1,y:2, requires:['prod1'], bonus:{prodMult:0.3}}
 ];
 
 const upgSec = document.getElementById('upgSec');
@@ -162,16 +178,29 @@ function resetGame() {
 
 document.getElementById('genBtn').addEventListener('click', function(e) {
     totalClicks++;
-    const earned = clickPwr * warpMult;
+    let earned = clickPwr * warpMult;
+    if (Math.random() < critChance) {
+        earned *= critMult;
+        const floater = document.createElement('div');
+        floater.className = 'float-txt';
+        floater.textContent = `CRIT! +${Math.floor(earned)}`;
+        floater.style.left = e.clientX + 'px';
+        floater.style.top = e.clientY + 'px';
+        floater.style.color = '#ff00ff';
+        floater.style.fontSize = '20px';
+        document.body.appendChild(floater);
+        setTimeout(() => floater.remove(), 1000);
+    } else {
+        const floater = document.createElement('div');
+        floater.className = 'float-txt';
+        floater.textContent = `+${Math.floor(earned)}`;
+        floater.style.left = e.clientX + 'px';
+        floater.style.top = e.clientY + 'px';
+        document.body.appendChild(floater);
+        setTimeout(() => floater.remove(), 1000);
+    }
     credits += earned;
     lifetimeCreds += earned;
-    const floater = document.createElement('div');
-    floater.className = 'float-txt';
-    floater.textContent = `+${clickPwr}`;
-    floater.style.left = e.clientX + 'px';
-    floater.style.top = e.clientY + 'px';
-    document.body.appendChild(floater);
-    setTimeout(() => floater.remove(), 1000);
     updUI();
 });
 
@@ -190,6 +219,23 @@ function buyUpg(id) {
     }
     if (upg.clickBonus) clickPwr += upg.clickBonus;
     addLog(`> deployed ${upg.name} [level ${upg.owned}]`);
+    updUI();
+}
+
+function buySkill(id) {
+    const skill  = skills.find(s => s.id === id);
+    if (!skill || skill.owned || rPoints < skill.cost) return;
+    if (skill.requires) {
+        const reqsMet = skill.requires.every(req => skills.find(s => s.id === req)?.owned);
+        if (!reqsMet) {
+            addLog(`> ERROR: requirements not met for ${skill.name}`);
+            return;
+        }
+    }
+    rPoints -= skill.cost;
+    skill.owned = true;
+    if (skill.bonus.prodMult) warpMult += skill.bonus.prodMult;
+    addLog(`> RESEARCH COMPLETE: ${skill.name}`);
     updUI();
 }
 
@@ -230,6 +276,24 @@ function checkACH() {
             if (ach.reward > 0) addLog(`> REWARD: +${ach.reward} ECs`);
         }
     });
+}
+
+function triggerRE() {
+    if (activeEV) return;
+    if (Math.random() > 0.3) return;
+    const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+    activeEV  ={
+        ...event,
+        endTime: event.duration > 0 ? Date.now() + event.duration : 0
+    };
+    addLog(`> EVENT: ${event.name} - ${event.desc}`);
+}
+
+function updEvents() {
+    if (activeEV && activeEV.endTime > 0 && Date.now() >= activeEV.endTime){
+        addLog(`> EVENT ENDED: ${activeEV.name}`);
+        activeEV = null;
+    }
 }
 
 function updUI() {
@@ -293,8 +357,21 @@ setInterval(() => {
     const earned = (cps / 10) * warpMult;
     credits += earned;
     lifetimeCreds += earned;
+
+    if (acLvl > 0) {
+        credits += (clickPwr * warpMult* acLvl) / 10;
+        lifetimeCreds += (clickPwr * warpMult * acLvl) / 10;
+    }
+    updEvents();
     updUI();
 },100);
+
+setInterval(() => {
+    if (Date.now() - lastEVT > 60000) { //every minute
+        triggerRE();
+        lastEVT = Date.now();
+    }
+},60000);
 
 setInterval(() => {
     const events = [
