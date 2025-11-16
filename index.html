@@ -18,7 +18,7 @@
             </div>
             <div class="content">
                 <div class="output">last login: <span id="loginTime"></span> on sss001</div>
-                <div class="prompt">sss:~ commander<span class="cmd"> ./station_control.sh</span></div>
+                <div class="prompt">commander@sss001 ~: # commander<span class="cmd"> ./station_control.sh</span></div>
                 <div class="output">initialising Siege Space Station controller...</div>
                 <div class="output">loading systems... [OK]</div>
                 <br>
@@ -99,8 +99,28 @@
                 </div>
                 <div class="sec-head">ACHIEVEMENTS</div>
                 <div class="upg-sec" id="achSec"></div>
+
                 <div class="sec-head">AVAILABLE UPGRADES</div>
                 <div class="upg-sec" id="upgSec"></div>
+
+                <div class="sec-head">GAME DATA</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
+                    <div class="btn-prompt" onclick="saveGame()" style="margin: 0;">
+                        <div class="btn-txt">SAVE GAME</div>
+                    </div>
+                    <div class="btn-prompt" onclick="exportSave()" style="margin: 0;">
+                        <div class="btn-txt">EXPORT GAME DATA</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template: 1fr 1fr; gap: 10px; margin: 10px 0;">
+                    <div class="btn-prompt" onclick="importSave()" style="margin: 0;">
+                        <div class="btn-txt">IMPORT SAVE DATA</div>
+                    </div>
+                    <div class="btn-prompt" onclick="resetGame()" style="margin: 0;">
+                        <div class="btn-txt">RESET ALL</div>
+                    </div>
+                </div>
+
                 <div class="sec-head">SYSTEM LOG</div>
                 <div class="log-sec" id="logSec"></div>
                 <br>

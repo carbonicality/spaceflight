@@ -62,9 +62,109 @@ function addLog(msg) {
     if (log.children.length > 20) log.removeChild(log.lastChild);
 }
 
+function saveGame() {
+    const sd = {
+        credits,
+        clickPwr,
+        cps,
+        startTime,
+        solar,
+        fusion,
+        siege,
+        quantum,
+        warpLvl,
+        lifetimeCreds,
+        warpMult,
+        warpCost,
+        totalClicks,
+        upgrades: upgrades.map(u => ({owned: u.owned, cost: u.cost})),
+        achievements: achievements.map(a => ({progress: a.progress, unlocked: a.unlocked})),
+        version: 1
+    };
+    localStorage.setItem('spaceflightSave', JSON.stringify(sd));
+}
+
+function loadGame() {
+    const saved = localStorage.getItem('spaceflightSave');
+    if (!saved) return false;
+    try {
+        const data = JSON.parse(saved);
+        credits = data.credits || 0;
+        clickPwr = data.clickPwr || 1;
+        cps = data.cps || 0;
+        startTime = data.startTime || Date.now();
+        solar = data.solar || 0;
+        fusion = data.fusion || 0;
+        siege = data.siege || 0;
+        quantum = data.quantum || 0;
+        warpLvl = data.warpLvl || 0;
+        lifetimeCreds = data.lifetimeCreds || 0;
+        warpMult = data.warpMult || 1;
+        warpCost = data.warpCost || 1000000;
+        totalClicks = data.totalClicks|| 0;
+        
+        if (data.upgrades) {
+            data.upgrades.forEach((u,i)=> {
+                if (upgrades[i]) {
+                    upgrades[i].owned = u.owned;
+                    upgrades[i].cost= u.cost;
+                }
+            });
+        }
+
+        if (data.achievements) {
+            data.achievements.forEach((a,i) => {
+                if (achievements[i]) {
+                    achievements[i].progress = a.progress;
+                    achievements[i].unlocked = a.unlocked;
+                }
+            });
+        }
+        addLog('> SAVE DATA LOADED');
+        return true;
+    } catch (e) {
+        addLog('> ERROR: CORRUPTED SAVE DATA (or sm else maybe something went wrong, check console)');
+        console.error(e);
+        return false;
+    }
+}
+
+function exportSave() {
+    const sd = localStorage.setItem('spaceflightSave');
+    if (!sd) {
+        addLog('> ERROR: NO SAVE DATA FOUND');
+        return;
+    }
+    navigator.clipboard.writeText(btoa(sd));
+    addLog('> SAVE DATA COPIED TO CLIPBOARD');
+}
+
+function importSave() {
+    const code = prompt('PASTE SAVE DATA:');
+    if (!code) return;
+    try {
+        const decoded = atob(code);
+        JSON.parse(decoded);
+        localStorage.setItem('spaceflightSave', decoded);
+        addLog('> SAVE CODE IMPORTED');
+        location.reload();
+    } catch (e) {
+        addLog('> ERROR: INVALID SAVE CODE')
+    }
+}
+
+function resetGame() {
+    if (!confirm('WARNING: \n\n if you decide to reset the game, you will wipe ALL CURRENT SAVED DATA. do you want to continue?')) return;
+    localStorage.remove('spaceflightSave');
+    addLog('> ALL DATA DELETED. THE SSS WILL INITIATE SELF DESTRUCTION.'); // dramatic
+    setTimeout(() => location.reload(), 1000);
+}
+
 document.getElementById('genBtn').addEventListener('click', function(e) {
     totalClicks++;
-    credits += clickPwr * warpMult;
+    const earned = clickPwr * warpMult;
+    credits += earned;
+    lifetimeCreds += earned;
     const floater = document.createElement('div');
     floater.className = 'float-txt';
     floater.textContent = `+${clickPwr}`;
@@ -151,7 +251,6 @@ function updUI() {
     const pwr = 90 + Math.random() * 10;
     const oxyBlocks = Math.floor(oxygen / 5);
     const pwrBlocks = Math.floor(pwr / 5);
-    lifetimeCreds += (cps / 10) * warpMult;
     
     document.getElementById('oxfill').textContent = '█'.repeat(oxyBlocks) + '░'.repeat(20 - oxyBlocks);
     document.getElementById('oxPercent').textContent = Math.floor(oxygen) + '%';
@@ -209,8 +308,14 @@ setInterval(() => {
     addLog(events[Math.floor(Math.random() * events.length)]);
 },12000);
 
+setInterval(saveGame, 30000); // attempt to save game every 30s
+
 addLog('> remote control interface initialised');
 addLog('> SYS_CHECK: all systems operational');
 addLog('> WARN: start power generation');
 
-updUI();
+if (loadGame()) {
+    updUI();
+} else {
+    updUI();
+}
