@@ -103,6 +103,25 @@
                 <div class="sec-head">AVAILABLE UPGRADES</div>
                 <div class="upg-sec" id="upgSec"></div>
 
+                <div class="sec-head">DRONE HANGAR <span style="color: #00ff00;" id="droneSlots">0/2</span></div>
+                <div class="upg-sec" id="droneList">
+                    <div class="output" style="opacity: 0.6;">no drones deployed.</div>
+                </div>
+
+                <div class="sec-head">DEPLOY DRONES</div>
+                <div class="upg-sec">
+                    <div class="upg-ln" id="drone-harvester" onclick="buyDrone('harvester')">
+                        <span class="upg-name">HARVESTER_DRONE - collects 1% of CPS every 5 seconds</span>
+                        <span class="upg-lvl"></span>
+                        <span class="upg-cost">100,000 ECs</span>
+                    </div>
+                    <div class="upg-ln" id="drone-fighter" onclick="buyDrone('fighter')">
+                        <span class="upg-name">FIGHTER_DRONE - auto clicks, 1 click per 3 seconds</span>
+                        <span class="upg-lvl"></span>
+                        <span class="upg-cost">150,000 ECs</span>
+                    </div>
+                </div>
+
                 <div class="sec-head">GAME DATA</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0;">
                     <div class="btn-prompt" onclick="saveGame()" style="margin: 0;">

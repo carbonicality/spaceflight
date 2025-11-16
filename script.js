@@ -15,6 +15,9 @@ let acLvl = 0;
 let critChance = 0;
 let critMult = 2;
 let lastEVT = Date.now();
+let drones = [];
+let maxDrones = 0;
+let activeEV = null;
 
 const upgrades = [
     {id:'solar', name:'SOLAR_PANELS', desc:'0.1 EC/s', cost:10, owned: 0,cps: 0.1},
@@ -35,11 +38,27 @@ const achievements = [
 const randomEvents = [
     {id:'meteor', name: 'METEOR_SHOWER', desc: 'solar panels +50% for 30s', duration: 30000, effect:'solarBoost'}
 ];
-let activeEV = null;
 
 const skills = [
     {id: 'prod1', name: 'PRODUCTION_I', desc: '+15% to all production', tier: 1, cost: 10, owned: false, x:1,y:1, bonus:{prodMult:0.15}},
     {id: 'prod2', name: 'PRODUCTION_II', desc: '+30% to all production', tier: 2, cost: 50, owned: false, x: 1,y:2, requires:['prod1'], bonus:{prodMult:0.3}}
+];
+
+const droneTypes = [
+    {
+        id: 'harvester',
+        name: 'HARVESTER_DRONE',
+        desc: 'collects 1% of CPS every 5 seconds',
+        cost: 100000,
+        ability: 'harvest'
+    },
+    {
+        id: 'fighter',
+        name: 'FIGHTER_DRONE',
+        desc: 'auto clicks, 3 clicks a second',
+        cost: 150000,
+        ability: 'autoclick'
+    }
 ];
 
 const upgSec = document.getElementById('upgSec');
@@ -93,6 +112,7 @@ function saveGame() {
         warpMult,
         warpCost,
         totalClicks,
+        drones: drones, 
         upgrades: upgrades.map(u => ({owned: u.owned, cost: u.cost})),
         achievements: achievements.map(a => ({progress: a.progress, unlocked: a.unlocked})),
         version: 1
@@ -136,6 +156,11 @@ function loadGame() {
                 }
             });
         }
+
+        if (data.drones) {
+            drones = data.drones;
+        }
+        
         addLog('> SAVE DATA LOADED');
         return true;
     } catch (e) {
@@ -176,6 +201,66 @@ function resetGame() {
     setTimeout(() => location.reload(), 1000);
 }
 
+function buyDrone(typeId) {
+    const type = droneTypes.find(t => t.id === typeId);
+    if (!type) return;
+    maxDrones = 2;
+    if (drones.length >= maxDrones) {
+        addLog('> ERROR: NO AVAILABLE DRONE SLOTS - MAX 2');
+        return;
+    }
+    if (credits < type.cost) return;
+    credits -= type.cost;
+    drones.push({
+        id: Date.now(),
+        type: typeId,
+        name: type.name,
+        ability: type.ability,
+        level: 1,
+        experience: 0
+    });
+    addLog(`> DRONE DEPLOYED: ${type.name}`);
+    updUI();
+}
+
+function updDrones() {
+    drones.forEach(drone => {
+        switch(drone.ability) {
+            case 'harvest':
+                if (Math.random() < 0.02) {
+                    const earned = cps * 0.01* drone.level;
+                    credits += earned;
+                    lifetimeCreds += earned;
+                }
+                break;
+            case 'autoclick':
+                const clicks = (3 * drone.level) / 10;
+                const clickEarned = clickPwr * warpMult * clicks;
+                credits +=clickEarned;
+                lifetimeCreds += clickEarned;
+                break;
+        }
+        drone.experience += 0.01;
+        if (drone.experience >= 100 * drone.level) {
+            drone.level++;
+            drone.experience = 0;
+            addLog(`> DRONE LEVELED UP: ${drone.name} [LV.${drone.level}]`);
+        }
+    });
+}
+
+function sellDrone(droneId) {
+    const idx = drones.findIndex(d => d.id === droneId);
+    if (idx === -1) return;
+    const drone = drones[idx];
+    const refund = droneTypes.find(t => t.id  === drone.type).cost * 0.5;
+    credits += refund;
+    drones.splice(idx,1);
+    addLog(`> DRONE SOLD: ${drone.name} [+${Math.floor(refund)} ECs]`)
+    updUI();
+}
+
+
 document.getElementById('genBtn').addEventListener('click', function(e) {
     totalClicks++;
     let earned = clickPwr * warpMult;
@@ -210,7 +295,7 @@ function buyUpg(id) {
     credits -= upg.cost;
     upg.owned++;
     upg.cost = Math.floor(upg.cost * 1.15);
-    if (upg.cps) {
+    if (upg.cps) {  
         cps += upg.cps;
         if (upg.id === 'solar') solar++;
         if (upg.id === 'fusion') fusion++;
@@ -351,6 +436,32 @@ function updUI() {
             }
         }
     });
+
+    const droneContainer = document.getElementById('droneList');
+    if (droneContainer) {
+        droneContainer.innerHTML = '';
+        drones.forEach(drone => {
+            const droneEl = document.getElementById('div');
+            droneEl.className = 'upg-ln';
+            droneEl.style.cursor = 'default';
+            droneEl.innerHTML = `
+            <span class="upg-name">${drone.name} LV.${drone.level}</span>
+            <span class="upg-lvl">EXP: ${Math.floor(drone.experience)}/ ${100 * drone.level}</span>
+            <span class="upg-cost" onclick="sellDrone(${drone.id})" style="cursor: pointer; color: #ff4444;">SELL</span>`;
+            droneContainer.appendChild(droneEl);
+        });
+        const slotsUsed = drones.length;
+        const slotsEl = document.getElementById('droneSlots');
+        if (slotsEl) {
+            slotsEl.textContent = `${slotsUsed}/${maxDrones}`;
+        }
+    }
+    droneTypes.forEach(type => {
+        const btn = document.getElementById(`drone-${type.id}`);
+        if (btn) {
+            btn.classList.toggle('locked', credits < type.cost || drones.length  >= maxDrones);
+        }
+    });
 }
 
 setInterval(() => {
@@ -362,6 +473,7 @@ setInterval(() => {
         credits += (clickPwr * warpMult* acLvl) / 10;
         lifetimeCreds += (clickPwr * warpMult * acLvl) / 10;
     }
+    updDrones();
     updEvents();
     updUI();
 },100);
