@@ -440,16 +440,26 @@ function updUI() {
     const droneContainer = document.getElementById('droneList');
     if (droneContainer) {
         droneContainer.innerHTML = '';
-        drones.forEach(drone => {
-            const droneEl = document.createElement('div');
-            droneEl.className = 'upg-ln';
-            droneEl.style.cursor = 'default';
-            droneEl.innerHTML = `
-            <span class="upg-name">${drone.name} LV.${drone.level}</span>
-            <span class="upg-lvl">EXP: ${Math.floor(drone.experience)}/ ${100 * drone.level}</span>
-            <span class="upg-cost" onclick="sellDrone(${drone.id})" style="cursor: pointer; color: #ff4444;">SELL</span>`;
-            droneContainer.appendChild(droneEl);
-        });
+        if (drones.length === 0) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className  ='output';
+            emptyMsg.style.opacity = '0.6';
+            emptyMsg.textContent = 'no drones deployed.';
+            droneContainer.appendChild(emptyMsg);
+        }  else {
+            drones.forEach(drone => {
+                const droneEl = document.createElement('div');
+                droneEl.className = 'upg-ln';
+                droneEl.style.cursor = 'default';
+                droneEl.innerHTML = `
+                <span class="upg-name">${drone.name} LV.${drone.level}</span>
+                <span class="upg-lvl">EXP: ${Math.floor(drone.experience)}/${100 * drone.level}</span>
+                <span class="upg-cost sell-btn" style="cursor: pointer; color: #ff4444">SELL</span>`;
+                const sellBtn = droneEl.querySelector('.sell-btn');
+                sellBtn.addEventListener('click', () => sellDrone(drone.id));
+                droneContainer.appendChild(droneEl);
+            });
+        }
         const slotsUsed = drones.length;
         const slotsEl = document.getElementById('droneSlots');
         if (slotsEl) {
